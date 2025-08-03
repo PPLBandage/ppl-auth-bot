@@ -1,23 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { Markup, session, Telegraf, type Context } from 'telegraf';
+import { Markup, Telegraf, type Context } from 'telegraf';
 import { PrismaService } from '../prisma/prisma.service';
-import type { Update, User } from 'telegraf/types';
-
-interface SessionContext<U extends Update = Update> extends Context<U> {
-    session: {
-        data: string[];
-    };
-}
+import type { User } from 'telegraf/types';
 
 @Injectable()
 export class TelegramService {
-    private bot: Telegraf<SessionContext>;
+    private bot: Telegraf;
 
     constructor(private prisma: PrismaService) {
-        this.bot = new Telegraf<SessionContext>(
-            process.env.BOT_TOKEN as string
-        );
-        this.bot.use(session({ defaultSession: () => ({ data: [] }) }));
+        this.bot = new Telegraf(process.env.BOT_TOKEN as string);
     }
 
     async createLoginData(user: User) {
