@@ -40,45 +40,6 @@ export class TelegramService {
         });
     }
 
-    getBaseHelloText(ctx: Context) {
-        return (
-            `*Привет, ${ctx.from?.first_name}*👋\n` +
-            `Для продолжения нажми кнопку ниже`
-        );
-    }
-
-    async precessLogin(ctx: Context, code: string) {
-        const redirect_uri = `https://pplbandage.ru/me/login/telegram`;
-
-        const keyboard = Markup.inlineKeyboard([
-            Markup.button.url(
-                `Войти как ${ctx.from?.first_name}`,
-                `${redirect_uri}?code=${code}`
-            )
-        ]);
-
-        await ctx.reply(this.getBaseHelloText(ctx), {
-            reply_markup: keyboard.reply_markup,
-            parse_mode: 'Markdown'
-        });
-    }
-
-    async precessConnect(ctx: Context, code: string) {
-        const redirect_uri = `https://pplbandage.ru/me/connect/telegram`;
-
-        const keyboard = Markup.inlineKeyboard([
-            Markup.button.url(
-                `Подключить аккаунт ${ctx.from?.first_name}`,
-                `${redirect_uri}?code=${code}`
-            )
-        ]);
-
-        await ctx.reply(this.getBaseHelloText(ctx), {
-            reply_markup: keyboard.reply_markup,
-            parse_mode: 'Markdown'
-        });
-    }
-
     launchBot() {
         this.bot.start(async ctx => {
             const action = ctx.payload;
@@ -89,12 +50,30 @@ export class TelegramService {
             }
 
             const data = await this.createLoginData(ctx.from);
+
+            let redirect_uri = 'https://pplbandage.ru/me/login/telegram';
+            let button_text = 'Войти как';
+
             if (action === 'connect') {
-                await this.precessConnect(ctx, data.code);
-                return;
+                redirect_uri = 'https://pplbandage.ru/me/connect/telegram';
+                button_text = 'Подключить аккаунт';
             }
 
-            await this.precessLogin(ctx, data.code);
+            const keyboard = Markup.inlineKeyboard([
+                Markup.button.url(
+                    `${button_text} ${ctx.from?.first_name}`,
+                    `${redirect_uri}?code=${data.code}`
+                )
+            ]);
+
+            const text =
+                `*Привет, ${ctx.from?.first_name}*👋\n` +
+                `Для продолжения нажми кнопку ниже`;
+
+            await ctx.reply(text, {
+                reply_markup: keyboard.reply_markup,
+                parse_mode: 'Markdown'
+            });
         });
 
         this.bot.launch();

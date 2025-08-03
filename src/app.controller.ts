@@ -22,9 +22,8 @@ export class AppController {
         const code = await this.prisma.codes.findFirst({
             where: { code: body.code }
         });
-        if (!code) {
-            throw new HttpException({ message: 'Code not found' }, 404);
-        }
+
+        if (!code) throw new HttpException({ message: 'Code not found' }, 404);
 
         if (new Date(code.expires).getTime() > Date.now()) {
             await this.prisma.codes.delete({ where: { id: code.id } });
