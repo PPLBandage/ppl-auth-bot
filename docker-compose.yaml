@@ -1,0 +1,21 @@
+services:
+    ppl_auth_bot:
+        container_name: ppl_auth_bot
+        build:
+            context: .
+            dockerfile: Dockerfile
+        networks:
+            nginx:
+            postgres-net:
+        environment:
+            - TZ=Europe/Moscow
+        restart: always
+        command: npm run start
+
+networks:
+    nginx:
+        external: true
+        name: nginx
+
+    postgres-net:
+        external: true
