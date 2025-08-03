@@ -1,12 +1,13 @@
 services:
     ppl_auth_bot:
         container_name: ppl_auth_bot
+        volumes:
+            - ./data:/app/data
         build:
             context: .
             dockerfile: Dockerfile
         networks:
-            nginx:
-            postgres-net:
+            - nginx
         environment:
             - TZ=Europe/Moscow
         restart: always
@@ -16,6 +17,3 @@ networks:
     nginx:
         external: true
         name: nginx
-
-    postgres-net:
-        external: true
