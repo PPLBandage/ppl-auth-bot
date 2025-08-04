@@ -55,7 +55,8 @@ export class TelegramService {
             let button_text = 'Войти как';
 
             if (action === 'connect') {
-                redirect_uri = 'https://pplbandage.ru/me/connect/telegram';
+                redirect_uri =
+                    'https://pplbandage.ru/me/accounts/connect/telegram';
                 button_text = 'Подключить аккаунт';
             }
 
