@@ -1,13 +1,18 @@
 import {
     Body,
     Controller,
+    Get,
+    Header,
     HttpException,
+    Param,
     Post,
+    StreamableFile,
     UsePipes,
     ValidationPipe
 } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { CodeDTO } from './dto/app.dto';
+import { GetFileResponse, GetUserProfilePhotosResponse } from './types';
 
 @Controller()
 export class AppController {
@@ -38,5 +43,36 @@ export class AppController {
             username: code.username,
             language_code: code.language_code
         };
+    }
+
+    @Get('avatar/:uid')
+    @Header('Content-Type', 'image/png')
+    async avatar(@Param('uid') uid: string) {
+        const response = await fetch(
+            `https://api.telegram.org/bot${process.env.BOT_TOKEN}/getUserProfilePhotos?user_id=${uid}`
+        );
+        if (!response.ok) throw new HttpException('Not found', 404);
+
+        const photos: GetUserProfilePhotosResponse = await response.json();
+        if (photos.result.total_count === 0)
+            throw new HttpException('Not found', 404);
+
+        const current_avatar = photos.result.photos[0].reverse()[0];
+        if (!current_avatar) throw new HttpException('Not found', 404);
+
+        const file_response = await fetch(
+            `https://api.telegram.org/bot${process.env.BOT_TOKEN}/getFile?file_id=${current_avatar.file_id}`
+        );
+        if (!file_response.ok) throw new HttpException('Not found', 404);
+        const file_data: GetFileResponse = await file_response.json();
+
+        const avatar_response = await fetch(
+            `https://api.telegram.org/file/bot${process.env.BOT_TOKEN}/${file_data.result.file_path}`
+        );
+        if (!avatar_response.ok) throw new HttpException('Not found', 404);
+
+        return new StreamableFile(
+            Buffer.from(await avatar_response.arrayBuffer())
+        );
     }
 }
