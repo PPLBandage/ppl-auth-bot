@@ -2,7 +2,6 @@ import {
     Body,
     Controller,
     Get,
-    Header,
     HttpException,
     Param,
     Post,
@@ -46,7 +45,6 @@ export class AppController {
     }
 
     @Get('avatar/:uid')
-    @Header('Content-Type', 'image/png')
     async avatar(@Param('uid') uid: string) {
         const response = await fetch(
             `https://api.telegram.org/bot${process.env.BOT_TOKEN}/getUserProfilePhotos?user_id=${uid}`
@@ -72,7 +70,8 @@ export class AppController {
         if (!avatar_response.ok) throw new HttpException('Not found', 404);
 
         return new StreamableFile(
-            Buffer.from(await avatar_response.arrayBuffer())
+            Buffer.from(await avatar_response.arrayBuffer()),
+            { type: 'image/png' }
         );
     }
 }
